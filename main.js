@@ -2,7 +2,7 @@ const roleHarvester = require('role.harvester');
 const roleUpgrader = require('role.upgrader');
 const roleBuilder = require('role.builder');
 
-const SPAWN_NAME = "Main";
+const SPAWN_NAME = "Spawn1";
 const MIN_HARVESTERS = 2;
 const MIN_UPGRADERS = 2;
 const MIN_BUILDERS = 2;

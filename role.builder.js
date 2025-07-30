@@ -61,35 +61,8 @@ const roleBuilder = {
         if (constructionSites.length === 0) {
             return null;
         }
-
-        // Prioritize construction sites based on distance, building progress, and importance
-        constructionSites.sort((a, b) => {
-            const distanceA = creep.pos.getRangeTo(a);
-            const distanceB = creep.pos.getRangeTo(b);
-            const progressA = a.progress / a.progressTotal;
-            const progressB = b.progress / b.progressTotal;
-            const importanceA = this.getConstructionImportance(a);
-            const importanceB = this.getConstructionImportance(b);
-
-            return (importanceB - importanceA) || (progressA - progressB) || (distanceA - distanceB);
-        });
-
         return constructionSites[0];
     },
-
-    /** @param {ConstructionSite} site **/
-    getConstructionImportance: function(site) {
-        switch (site.structureType) {
-            case STRUCTURE_SPAWN:
-                return 3;
-            case STRUCTURE_EXTENSION:
-                return 2;
-            case STRUCTURE_TOWER:
-                return 1;
-            default:
-                return 0;
-        }
-    }
 };
 
 module.exports = roleBuilder;
