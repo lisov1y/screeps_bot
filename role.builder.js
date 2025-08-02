@@ -1,8 +1,5 @@
-let mainJobSite = "";
-
 const roleBuilder = {
 
-    /** @param {Creep} creep **/
     run: function(creep) {
         if (creep.memory.building && creep.store[RESOURCE_ENERGY] === 0) {
             creep.memory.building = false;
@@ -23,7 +20,7 @@ const roleBuilder = {
     /** @param {Creep} creep **/
     buildConstruction: function(creep) {
         
-        const target = this.findConstructionSiteByType(creep, STRUCTURE_CONTAINER);
+        const target = this.findConstructionSite(creep);
         if (target) {
             if (creep.build(target) === ERR_NOT_IN_RANGE) {
                 creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
@@ -33,11 +30,22 @@ const roleBuilder = {
 
     /** @param {Creep} creep **/
     harvestEnergy: function(creep) {
-        const target = this.findEnergySource(creep);
-        if (target) {
-            if (creep.withdraw(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE || creep.harvest(target) === ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, { visualizePathStyle: { stroke: '#ffaa00' } });
+        const droppedEnergy = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
+            filter: resource => resource.resourceType === RESOURCE_ENERGY && resource.amount > 0
+        });
+        if (droppedEnergy) {
+            if (creep.pickup(droppedEnergy) === ERR_NOT_IN_RANGE) {
+                creep.moveTo(droppedEnergy, { visualizePathStyle: { stroke: '#ffaa00' } });
             }
+        }
+        if (!creep.memory.targetSource) {
+            const sources = creep.room.find(FIND_SOURCES);
+            const closestSource = creep.pos.findClosestByPath(sources);
+            creep.memory.targetSource = closestSource.id;
+        }
+        const source = Game.getObjectById(creep.memory.targetSource);
+        if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' } });
         }
     },
 
@@ -59,15 +67,16 @@ const roleBuilder = {
     },
 
     /** @param {Creep} creep **/
-    findConstructionSite: function(creep, type) {
-        const containerSites = creep.room.find(FIND_CONSTRUCTION_SITES, {
-            filter: site => site.structureType === type
+    findConstructionSite: function(creep) {
+        const priorityBuild = creep.room.find(FIND_CONSTRUCTION_SITES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_EXTENSION ||
+                        structure.structureType == STRUCTURE_TOWER ||
+                        structure.structureType == STRUCTURE_CONTAINER);
+            }         
         });
-        if (containerSites.length === 0) {
-            return null;
-        }
-            return containerSites[0];
-        },
+        return null;
+    },
 
     /** @param {Creep} creep **/
     findConstructionSiteByType: function(creep, type) {
