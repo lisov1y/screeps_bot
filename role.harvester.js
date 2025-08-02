@@ -37,8 +37,25 @@ const roleHarvester = {
             if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' } });
             }
+        } else {
+            const target = this.findConstructionSite(creep);
+            if (target) {
+                if (creep.build(target) === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
+                }
+            }
         }
-    }
+    },
+    /** @param {Creep} creep **/
+    findConstructionSite: function(creep) {
+        const containerSites = creep.room.find(FIND_CONSTRUCTION_SITES);
+        if (containerSites.length === 0) {
+            return null;
+        }
+            return containerSites[0];
+        }
 };
+
+
 
 module.exports = roleHarvester;
