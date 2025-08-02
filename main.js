@@ -29,23 +29,36 @@ function spawnCreepsIfNeeded() {
     const upgraders = _.filter(Game.creeps, (creep) => creep.memory.role === 'upgrader');
     const builders = _.filter(Game.creeps, (creep) => creep.memory.role === 'builder');
 
-    const energyAvailable = Game.spawns[SPAWN_NAME].energy;
+    const energyAvailable = getRoomEnergyAvailable(Game.spawns[SPAWN_NAME].room)
+    const maxRoomEnergy = Game.spawns[SPAWN_NAME].maxRoomEnergy;
     const roomLevel = Game.spawns[SPAWN_NAME].room.controller.level;
     const constructionSites = Game.spawns[SPAWN_NAME].room.find(FIND_CONSTRUCTION_SITES);
 
-    if (harvesters.length < MIN_HARVESTERS && energyAvailable >= CREEP_COST) {
-        spawnCreep('harvester');
-    } else if (upgraders.length < MIN_UPGRADERS && energyAvailable >= CREEP_COST) {
-        spawnCreep('upgrader');
-    } else if (builders.length < MIN_BUILDERS && energyAvailable >= CREEP_COST && roomLevel >= 2 && constructionSites.length > 0) {
-        spawnCreep('builder');
+    if (maxRoomEnergy === 300) {
+        if (harvesters.length < MIN_HARVESTERS && energyAvailable >= CREEP_COST) {
+            spawnCreep('harvester', CREEP_BODY);
+        } else if (upgraders.length < MIN_UPGRADERS && energyAvailable >= CREEP_COST && harvesters.length > 1) {
+            spawnCreep('upgrader', CREEP_BODY);
+        } else if (builders.length < MIN_BUILDERS && energyAvailable >= CREEP_COST && roomLevel >= 2 && constructionSites.length > 0 && harvesters.length > 1) {
+            spawnCreep('builder', CREEP_BODY);
+        }
+    } else {
+        console.log(energyAvailable)
+        if (harvesters.length < MIN_HARVESTERS && energyAvailable >= 500) {
+            spawnCreep('harvester', [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]);
+        } else if (upgraders.length < MIN_UPGRADERS && energyAvailable >= CREEP_COST && harvesters.length > 1) {
+            spawnCreep('upgrader', CREEP_BODY);
+        } else if (builders.length < MIN_BUILDERS && energyAvailable >= 500 && roomLevel >= 2 && constructionSites.length > 0 && harvesters.length > 1) {
+            spawnCreep('builder', [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]);
+        }
     }
+
 }
 
-function spawnCreep(role) {
+function spawnCreep(role, body) {
     const newName = `${role.charAt(0).toUpperCase() + role.slice(1)}${Game.time}`;
-    console.log(`Spawning new ${role}: ${newName}`);
-    Game.spawns[SPAWN_NAME].spawnCreep(CREEP_BODY, newName, { memory: { role: role } });
+    console.log(`Spawning new ${role[0]}: ${newName}`);
+    Game.spawns[SPAWN_NAME].spawnCreep(body, newName, { memory: { role: role } });
 }
 
 function runCreeps() {
@@ -59,4 +72,13 @@ function runCreeps() {
             roleBuilder.run(creep);
         }
     }
+}
+
+function getRoomEnergyAvailable(room) {
+    const structures = room.find(FIND_STRUCTURES, {
+        filter: s =>
+            (s.structureType === STRUCTURE_SPAWN || s.structureType === STRUCTURE_EXTENSION)
+    });
+
+    return structures.reduce((sum, s) => sum + s.store[RESOURCE_ENERGY], 0);
 }

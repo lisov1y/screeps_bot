@@ -5,11 +5,9 @@ const roleUpgrader = {
         // Check if the creep should switch between harvesting and upgrading
         if (creep.memory.upgrading && creep.store[RESOURCE_ENERGY] === 0) {
             creep.memory.upgrading = false;
-            creep.say('🔄 harvest');
         }
         if (!creep.memory.upgrading && creep.store.getFreeCapacity() === 0) {
             creep.memory.upgrading = true;
-            creep.say('⚡ upgrade');
         }
 
         // Perform the appropriate action based on the creep's state
