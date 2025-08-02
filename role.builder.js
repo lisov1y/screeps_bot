@@ -72,7 +72,7 @@ const roleBuilder = {
         if (constructionSites.length === 0) {
             return null;
         }
-            return containerSites[0];
+            return constructionSites[0];
         },
 };
 
