@@ -1,3 +1,5 @@
+let mainJobSite = "";
+
 const roleBuilder = {
 
     /** @param {Creep} creep **/
@@ -20,7 +22,8 @@ const roleBuilder = {
 
     /** @param {Creep} creep **/
     buildConstruction: function(creep) {
-        const target = this.findConstructionSite(creep);
+        
+        const target = this.findConstructionSiteByType(creep, STRUCTURE_CONTAINER);
         if (target) {
             if (creep.build(target) === ERR_NOT_IN_RANGE) {
                 creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
@@ -56,13 +59,26 @@ const roleBuilder = {
     },
 
     /** @param {Creep} creep **/
-    findConstructionSite: function(creep) {
-        const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
-        if (constructionSites.length === 0) {
+    findConstructionSite: function(creep, type) {
+        const containerSites = creep.room.find(FIND_CONSTRUCTION_SITES, {
+            filter: site => site.structureType === type
+        });
+        if (containerSites.length === 0) {
             return null;
         }
-        return constructionSites[0];
-    },
+            return containerSites[0];
+        },
+
+    /** @param {Creep} creep **/
+    findConstructionSiteByType: function(creep, type) {
+        const containerSites = creep.room.find(FIND_CONSTRUCTION_SITES, {
+            filter: site => site.structureType === type
+        });
+        if (containerSites.length === 0) {
+            return null;
+        }
+            return containerSites[0];
+        },
 };
 
 module.exports = roleBuilder;
