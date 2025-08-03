@@ -1,4 +1,3 @@
-
 const actions = {
 
     /* Getting energy */
@@ -29,10 +28,19 @@ const actions = {
             filter: (structure) => {
                 return (structure.structureType === STRUCTURE_CONTAINER ||
                         structure.structureType === STRUCTURE_STORAGE) &&
-                        structure.store[RESOURCE_ENERGY] > 0;
+                    structure.store[RESOURCE_ENERGY] > 0;
             }
         });
-        return 0;
+        return target ? target : 0;
+    },
+    findEnergySource: function(creep) {
+        // Find the closest container or storage with energy
+        let target = this.findStoredEnergy(creep);
+        // If no container or storage is found, find the closest active source
+        if (target === 0) {
+            target = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
+        }
+        return target;
     },
     transferEnergy: function(creep) {
         const targets = creep.room.find(FIND_STRUCTURES, {
@@ -41,7 +49,7 @@ const actions = {
                         structure.structureType == STRUCTURE_SPAWN ||
                         structure.structureType == STRUCTURE_TOWER ||
                         structure.structureType == STRUCTURE_CONTAINER) &&
-                        structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                    structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
             }
         });
         if (targets.length > 0) {
@@ -50,6 +58,21 @@ const actions = {
             }
         } else {
             this.buildConstruction(creep);
+        }
+    },
+    transferEnergyEmergency: function(creep) {
+        const targets = creep.room.find(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_EXTENSION ||
+                        structure.structureType == STRUCTURE_SPAWN &&
+                    structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
+            }
+        });
+        console.log(targets[0]);
+        if (targets.length > 0) {
+            if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(targets[0]);
+            }
         }
     },
 
@@ -73,6 +96,22 @@ const actions = {
         return constructionSites[0] ? constructionSites[0] : 0;
     },
 
+    /* Maintenance */
+    findDamagedStructure: function(creep) {
+        return creep.room.find(FIND_MY_STRUCTURES, {
+            filter: structure => structure.hits < structure.hitsMax
+        });
+    },
+
+    /** @param {Creep} creep **/
+    repairDamagedStructures: function(creep) {
+        const target = this.findDamagedStructure(creep);
+        if (target) {
+            if (creep.repair(target) === ERR_NOT_IN_RANGE) {
+                creep.moveTo(target);
+            }
+        }
+    },
 
 }
 

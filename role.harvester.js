@@ -2,7 +2,7 @@ const actions = require("./actions");
 
 const roleHarvester = {
 
-    run: function(creep) {
+    run: function(creep, creepCount) {
         if (creep.memory.harvesting && creep.store.getFreeCapacity() === 0) {
             creep.memory.harvesting = false;
         }
@@ -11,7 +11,7 @@ const roleHarvester = {
         }
 
         if (creep.memory.harvesting) {
-            actions.harvestEnergy(creep);
+            actions.harvestEnergy(creep)
         } else {
             actions.transferEnergy(creep);
         }

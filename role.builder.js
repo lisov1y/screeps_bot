@@ -12,15 +12,14 @@ const roleBuilder = {
         if (creep.memory.building) {
             actions.buildConstruction(creep);
         } else {
-            // If energy is stored in excess somewhere
-            if (actions.findStoredEnergy(creep)) {
-                const storage = actions.findStoredEnergy(creep);
-                if(creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(storage);
+            const src = actions.findEnergySource(creep);
+            if (src) {
+                // Withdraw or harvest energy from the target
+                if (creep.withdraw(src, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE || creep.harvest(src) === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(src);
                 }
-            } else {
-                actions.harvestEnergy(creep);
             }
+
         }
     }
 };
