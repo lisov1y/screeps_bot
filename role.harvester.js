@@ -16,16 +16,6 @@ const roleHarvester = {
             actions.transferEnergy(creep);
         }
     },
-
-
-    /** @param {Creep} creep **/
-    findConstructionSite: function(creep) {
-        const containerSites = creep.room.find(FIND_CONSTRUCTION_SITES);
-        if (containerSites.length === 0) {
-            return null;
-        }
-            return containerSites[0];
-        }
 };
 
 

@@ -48,9 +48,9 @@ function spawnCreepsIfNeeded() {
     } else {
         if (harvesters.length < MIN_HARVESTERS && energyAvailable >= 500) {
             spawnCreep('harvester', [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]);
-        } else if (upgraders.length < MIN_UPGRADERS && energyAvailable >= 500 && harvesters.length > 1) {
+        } else if (upgraders.length < 3 && energyAvailable >= 500 && harvesters.length > 1) {
             spawnCreep('upgrader', [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]);
-        } else if (builders.length < MIN_BUILDERS && energyAvailable >= 500 && harvesters.length > 1) {
+        } else if (builders.length < MIN_BUILDERS && energyAvailable >= 500 && harvesters.length > 1 && constructionSites.length > 0) {
             spawnCreep('builder', [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]);
         } else if (repairers.length < MIN_REPAIRERS && energyAvailable >= 500 && harvesters.length >= 2) {
             spawnCreep('repairer', [WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE]);

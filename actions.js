@@ -1,3 +1,6 @@
+const utils = require("./utils");
+
+
 const actions = {
 
     /* Getting energy */
@@ -15,7 +18,7 @@ const actions = {
         actions.pickupDroppedEnergy(creep);
         if (!creep.memory.targetSource) {
             const sources = creep.room.find(FIND_SOURCES);
-            const closestSource = creep.pos.findClosestByPath(sources);
+            let closestSource = creep.pos.findClosestByPath(sources);
             creep.memory.targetSource = closestSource.id;
         }
         const source = Game.getObjectById(creep.memory.targetSource);
@@ -43,36 +46,25 @@ const actions = {
         return target;
     },
     transferEnergy: function(creep) {
-        const targets = creep.room.find(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return (structure.structureType == STRUCTURE_EXTENSION ||
-                        structure.structureType == STRUCTURE_SPAWN ||
-                        structure.structureType == STRUCTURE_TOWER ||
-                        structure.structureType == STRUCTURE_CONTAINER) &&
-                    structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-            }
-        });
-        if (targets.length > 0) {
-            if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(targets[0]);
+        let target = utils.getExtensions(creep);
+        if (!target) {
+            target = utils.getSpawns(creep);
+        }
+        if (!target) {
+            target = utils.getTowers(creep);
+        }
+        if (!target) {
+            target = utils.getContainers(creep);
+        }
+        if (!target) {
+            target = utils.getStorages(creep);
+        }
+        if (target) {
+            if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(target);
             }
         } else {
             this.buildConstruction(creep);
-        }
-    },
-    transferEnergyEmergency: function(creep) {
-        const targets = creep.room.find(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return (structure.structureType == STRUCTURE_EXTENSION ||
-                        structure.structureType == STRUCTURE_SPAWN &&
-                    structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0);
-            }
-        });
-        console.log(targets[0]);
-        if (targets.length > 0) {
-            if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(targets[0]);
-            }
         }
     },
 
@@ -98,20 +90,50 @@ const actions = {
 
     /* Maintenance */
     findDamagedStructure: function(creep) {
-        return creep.room.find(FIND_MY_STRUCTURES, {
-            filter: structure => structure.hits < structure.hitsMax
+        const priorities = [
+            STRUCTURE_SPAWN,
+            STRUCTURE_EXTENSION,
+            STRUCTURE_TOWER,
+            STRUCTURE_CONTAINER,
+            STRUCTURE_STORAGE,
+            STRUCTURE_ROAD,
+            STRUCTURE_WALL
+        ];
+
+        const damagedStructures = creep.room.find(FIND_STRUCTURES, {
+            filter: structure => {
+                if (structure.hits >= structure.hitsMax) return false;
+
+                // Only repair walls below 1 million hits
+                if (structure.structureType === STRUCTURE_WALL && structure.hits > 1000000) {
+                    return false;
+                }
+
+                return true;
+            }
         });
+
+        // Sort by priority
+        damagedStructures.sort((a, b) => {
+            const aPriority = priorities.indexOf(a.structureType);
+            const bPriority = priorities.indexOf(b.structureType);
+
+            return aPriority - bPriority;
+        });
+
+        return damagedStructures;
     },
 
     /** @param {Creep} creep **/
     repairDamagedStructures: function(creep) {
-        const target = this.findDamagedStructure(creep);
+        const target = this.findDamagedStructure(creep)[0];
         if (target) {
             if (creep.repair(target) === ERR_NOT_IN_RANGE) {
-                creep.moveTo(target);
+                creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
             }
         }
     },
+
 
 }
 
