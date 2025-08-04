@@ -2,6 +2,10 @@ const roleHarvester = require('role.harvester');
 const roleUpgrader = require('role.upgrader');
 const roleBuilder = require('role.builder');
 const roleRepairer = require('./role.repairer');
+const towerManager = require('towerManager');
+
+const roomVisuals = require('./roomVisuals');
+
 
 const SPAWN_NAME = "Spawn1";
 const MIN_HARVESTERS = 2;
@@ -15,6 +19,9 @@ module.exports.loop = function () {
     cleanUpMemory();
     spawnCreepsIfNeeded();
     runCreeps();
+
+    roomVisuals.drawEnv();
+    towerManager.runTowers(Game.rooms["E43S57"]);
 };
 
 function cleanUpMemory() {
@@ -33,7 +40,7 @@ function spawnCreepsIfNeeded() {
     const repairers = _.filter(Game.creeps, (creep) => creep.memory.role === 'repairer');
 
     const energyAvailable = getRoomEnergyAvailable(Game.spawns[SPAWN_NAME].room)
-    const maxRoomEnergy = Game.spawns[SPAWN_NAME].maxRoomEnergy;
+    const maxRoomEnergy = Game.spawns[SPAWN_NAME].room.energyCapacityAvailable;
     const roomLevel = Game.spawns[SPAWN_NAME].room.controller.level;
     const constructionSites = Game.spawns[SPAWN_NAME].room.find(FIND_CONSTRUCTION_SITES);
 
@@ -45,16 +52,21 @@ function spawnCreepsIfNeeded() {
         } else if (builders.length < MIN_BUILDERS && energyAvailable >= CREEP_COST && roomLevel >= 2 && constructionSites.length > 0 && harvesters.length > 1) {
             spawnCreep('builder', CREEP_BODY);
         }
-    } else {
+    } else if (maxRoomEnergy >= 500 || harvesters.length > 1 || roomLevel === 2) {
         if (harvesters.length < MIN_HARVESTERS && energyAvailable >= 500) {
             spawnCreep('harvester', [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]);
-        } else if (upgraders.length < 3 && energyAvailable >= 500 && harvesters.length > 1) {
+        } else if (upgraders.length < 5 && energyAvailable >= 500 && harvesters.length > 1) {
             spawnCreep('upgrader', [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]);
         } else if (builders.length < MIN_BUILDERS && energyAvailable >= 500 && harvesters.length > 1 && constructionSites.length > 0) {
             spawnCreep('builder', [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]);
         } else if (repairers.length < MIN_REPAIRERS && energyAvailable >= 500 && harvesters.length >= 2) {
-            spawnCreep('repairer', [WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE]);
+            spawnCreep('repairer', [WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE]);
         }
+        // save 100
+    } else if (maxRoomEnergy >= 700 && harvesters.length >= 1 && roomLevel === 3) {
+        if (harvesters.length < MIN_HARVESTERS && energyAvailable >= 700) {
+            spawnCreep('harvester', [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]);
+        }        
     }
 }
 

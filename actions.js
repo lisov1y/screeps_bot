@@ -50,7 +50,7 @@ const actions = {
         if (!target) {
             target = utils.getSpawns(creep);
         }
-        if (!target) {
+        if (!target && creep.memory.role === "repairer") {
             target = utils.getTowers(creep);
         }
         if (!target) {
@@ -78,13 +78,7 @@ const actions = {
         }
     },
     findConstructionSite: function(creep) {
-        const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES, {
-            filter: site => (site.structureType === STRUCTURE_EXTENSION ||
-                site.structureType === STRUCTURE_TOWER ||
-                site.structureType === STRUCTURE_CONTAINER ||
-                site.structureType === STRUCTURE_STORAGE ||
-                site.structureType === STRUCTURE_ROAD)
-        });
+        const constructionSites = creep.room.find(FIND_CONSTRUCTION_SITES);
         return constructionSites[0] ? constructionSites[0] : 0;
     },
 
@@ -97,7 +91,8 @@ const actions = {
             STRUCTURE_CONTAINER,
             STRUCTURE_STORAGE,
             STRUCTURE_ROAD,
-            STRUCTURE_WALL
+            STRUCTURE_RAMPART,
+            STRUCTURE_WALL,
         ];
 
         const damagedStructures = creep.room.find(FIND_STRUCTURES, {
@@ -105,7 +100,7 @@ const actions = {
                 if (structure.hits >= structure.hitsMax) return false;
 
                 // Only repair walls below 1 million hits
-                if (structure.structureType === STRUCTURE_WALL && structure.hits > 1000000) {
+                if (structure.structureType === STRUCTURE_WALL && structure.hits > 250000) {
                     return false;
                 }
 
@@ -129,7 +124,7 @@ const actions = {
         const target = this.findDamagedStructure(creep)[0];
         if (target) {
             if (creep.repair(target) === ERR_NOT_IN_RANGE) {
-                creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
+                creep.moveTo(target);
             }
         }
     },
