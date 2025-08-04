@@ -14,8 +14,8 @@ const roleBuilder = {
         } else {
             const src = actions.findEnergySource(creep);
             if (src) {
-                // Withdraw or harvest energy from the target
-                if (creep.withdraw(src, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE || creep.harvest(src) === ERR_NOT_IN_RANGE) {
+                const result = creep.withdraw(src, RESOURCE_ENERGY);
+                if (result === ERR_NOT_IN_RANGE) {
                     creep.moveTo(src);
                 }
             }
