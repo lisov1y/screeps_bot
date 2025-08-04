@@ -65,7 +65,7 @@ function spawnCreepsIfNeeded() {
         // save 100
     } else if (maxRoomEnergy >= 700 && harvesters.length >= 1 && roomLevel === 3) {
         if (harvesters.length < MIN_HARVESTERS && energyAvailable >= 700) {
-            spawnCreep('harvester', [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE]);
+            spawnCreep('harvester', [WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE]);
         }        
     }
 }
