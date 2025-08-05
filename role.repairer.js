@@ -10,26 +10,26 @@ const roleRepairer = {
         }
 
         if (creep.memory.repairing) {
-            // Check for towers that need energy
-            const lowTower = creep.room.find(FIND_MY_STRUCTURES, {
+            // Find all towers that aren't full
+            const towersNeedingEnergy = creep.room.find(FIND_MY_STRUCTURES, {
                 filter: s => s.structureType === STRUCTURE_TOWER &&
-                             s.store[RESOURCE_ENERGY] <= 250
-            })[0];
+                             s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            });
 
-            if (lowTower) {
-                if (creep.transfer(lowTower, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                    creep.moveTo(lowTower);
+            if (towersNeedingEnergy.length > 0) {
+                const targetTower = creep.pos.findClosestByPath(towersNeedingEnergy);
+                if (creep.transfer(targetTower, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(targetTower);
                 }
                 return; // skip repairing this tick
             }
 
-            // Otherwise proceed with repairs
+            // Only repair if all towers are full
             actions.repairDamagedStructures(creep);
         } else {
-            let src = actions.findEnergySource(creep);
+            const src = actions.findEnergySource(creep);
             if (src) {
-                const result = creep.withdraw(src, RESOURCE_ENERGY);
-                if (result === ERR_NOT_IN_RANGE) {
+                if (creep.withdraw(src, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
                     creep.moveTo(src);
                 }
             }
