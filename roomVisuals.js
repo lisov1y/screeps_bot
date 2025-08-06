@@ -65,6 +65,16 @@ const roomVisuals = {
             font: 0.4,
             align: 'center',
         });
+        Game.rooms["E43S57"].visual.text("Wanna say hi? Discord: ", 35, 38, {
+            color: 'white',
+            font: 0.4,
+            align: 'center',
+        });
+        Game.rooms["E43S57"].visual.text("shishberry.", 39, 38, {
+            color: 'red',
+            font: 0.4,
+            align: 'right',
+        });
     }
 }
 

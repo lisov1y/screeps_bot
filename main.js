@@ -2,6 +2,7 @@ const roleHarvester = require('role.harvester');
 const roleUpgrader = require('role.upgrader');
 const roleBuilder = require('role.builder');
 const roleRepairer = require('./role.repairer');
+const roleHauler = require('./role.hauler');
 const towerManager = require('towerManager');
 const roomVisuals = require('./roomVisuals');
 
@@ -33,16 +34,25 @@ const ROLES = {
         ]
     },
     repairer: {
-        min: 2,
+        min: 1,
         bodies: [
             [WORK, CARRY, MOVE],
             [WORK, CARRY, CARRY, MOVE, MOVE],
-            [WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE],
+            [WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE],
+        ]
+    },
+    hauler: {
+        min: 1, // or more if needed later
+        bodies: [
+            [CARRY, CARRY, MOVE],
+            [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE],
+            [CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE], // RCL 3+
         ]
     }
+
 };
 
-module.exports.loop = function () {
+module.exports.loop = function() {
     cleanUpMemory();
     spawnCreepsIfNeeded();
     runCreeps();
@@ -71,9 +81,12 @@ function spawnCreepsIfNeeded() {
         upgrader: _.filter(Game.creeps, c => c.memory.role === 'upgrader').length,
         builder: _.filter(Game.creeps, c => c.memory.role === 'builder').length,
         repairer: _.filter(Game.creeps, c => c.memory.role === 'repairer').length,
+        hauler: _.filter(Game.creeps, c => c.memory.role === 'hauler').length,
     };
 
-    const rolePriority = ['harvester', 'upgrader', 'builder', 'repairer'];
+
+    const rolePriority = ['harvester', 'hauler', 'upgrader', 'builder', 'repairer'];
+
 
     for (const role of rolePriority) {
         const config = ROLES[role];
@@ -83,7 +96,19 @@ function spawnCreepsIfNeeded() {
         if (role !== 'harvester' && !hasMinHarvesters) continue; // block spawning non-harvesters
 
         if (role === 'builder' && constructionSites.length === 0) continue;
-        if (role === 'repairer' && controllerLevel < 2) continue;
+        // if (role === 'repairer') {
+        //     if (controllerLevel < 2) continue;
+        //     config.min = controllerLevel - 1;
+        // }
+if (role === 'repairer' && controllerLevel < 2) continue;
+const towers = room.find(FIND_STRUCTURES, {
+    filter: s => s.structureType === STRUCTURE_TOWER
+});
+
+
+        if (role === 'hauler' && towers.length === 0) continue;
+
+
 
         if (current < config.min || (role === 'upgrader' && current < 5)) {
             const tier = Math.min(controllerLevel - 1, config.bodies.length - 1);
@@ -102,7 +127,11 @@ function spawnCreepsIfNeeded() {
 function spawnCreep(role, body) {
     const name = `${role.charAt(0)}${Game.time}`;
     console.log(`Spawning new ${role}: ${name}`);
-    Game.spawns[SPAWN_NAME].spawnCreep(body, name, { memory: { role: role } });
+    Game.spawns[SPAWN_NAME].spawnCreep(body, name, {
+        memory: {
+            role: role
+        }
+    });
 }
 
 function runCreeps() {
@@ -121,6 +150,10 @@ function runCreeps() {
             case 'repairer':
                 roleRepairer.run(creep);
                 break;
+            case 'hauler':
+                roleHauler.run(creep);
+                break;
+
         }
     }
 }

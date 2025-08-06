@@ -11,18 +11,18 @@ const roleRepairer = {
 
         if (creep.memory.repairing) {
             // Find all towers that aren't full
-            const towersNeedingEnergy = creep.room.find(FIND_MY_STRUCTURES, {
-                filter: s => s.structureType === STRUCTURE_TOWER &&
-                             s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-            });
+            // const towersNeedingEnergy = creep.room.find(FIND_MY_STRUCTURES, {
+            //     filter: s => s.structureType === STRUCTURE_TOWER &&
+            //                  s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            // });
 
-            if (towersNeedingEnergy.length > 0) {
-                const targetTower = creep.pos.findClosestByPath(towersNeedingEnergy);
-                if (creep.transfer(targetTower, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                    creep.moveTo(targetTower);
-                }
-                return; // skip repairing this tick
-            }
+            // if (towersNeedingEnergy.length > 0) {
+            //     const targetTower = creep.pos.findClosestByPath(towersNeedingEnergy);
+            //     if (creep.transfer(targetTower, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+            //         creep.moveTo(targetTower);
+            //     }
+            //     return; // skip repairing this tick
+            // }
 
             // Only repair if all towers are full
             actions.repairDamagedStructures(creep);

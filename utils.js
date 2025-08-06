@@ -39,7 +39,7 @@ const utils = {
         return targets ? targets[0] : 0;
     },
 
-    getStorages: function() {
+    getStorages: function(creep) {
         const targets = creep.room.find(FIND_STRUCTURES, {
             filter: (structure) => {
                 return (structure.structureType == STRUCTURE_STORAGE &&
